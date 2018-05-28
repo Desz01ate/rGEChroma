@@ -31,11 +31,13 @@ namespace RenaissanceGEChroma
             new Key[] { Key.Z, Key.X, Key.C, Key.V, Key.B,  }
         };
         */
+        /*
         static readonly Key[][] charMPRows = new[] {
             new Key[] { Key.P, Key.O, Key.I, Key.U, Key.Y },
             new Key[] { Key.OemSemicolon,Key.L, Key.K, Key.J, Key.H },
             new Key[] { Key.OemSlash, Key.OemPeriod, Key.OemComma,  Key.M, Key.N}
         };
+        */
         static readonly Key[] NumpadKeys = new Key[] { Key.Num0, Key.Num1, Key.Num2, Key.Num3, Key.Num4, Key.Num5, Key.Num6, Key.Num7, Key.Num8, Key.Num9 };
         static readonly Key[] FunctionKeys = new Key[] { Key.F1, Key.F2, Key.F3, Key.F4, Key.F5, Key.F6, Key.F7, Key.F8, Key.F9, Key.F10, Key.F11, Key.F12 };
         static readonly ColoreColor fadePurple = new ColoreColor((byte)64, (byte)0, (byte)123);
@@ -44,7 +46,6 @@ namespace RenaissanceGEChroma
         static readonly ColoreColor fadeWhite = new ColoreColor((byte)32, (byte)32, (byte)32);
         static readonly ColoreColor contrastOrange = new ColoreColor((byte)255, (byte)40, 0);
         static bool dangerousState = false;
-        static int leaderIndex = 0;
         static void Main(string[] args)
         {
             MainAsync(args).GetAwaiter().GetResult();
