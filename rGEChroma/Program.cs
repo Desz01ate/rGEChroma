@@ -31,21 +31,20 @@ namespace RenaissanceGEChroma
             new Key[] { Key.Z, Key.X, Key.C, Key.V, Key.B,  }
         };
         */
-        /*
         static readonly Key[][] charMPRows = new[] {
-            new Key[] { Key.P, Key.O, Key.I, Key.U, Key.Y },
-            new Key[] { Key.OemSemicolon,Key.L, Key.K, Key.J, Key.H },
-            new Key[] { Key.OemSlash, Key.OemPeriod, Key.OemComma,  Key.M, Key.N}
+            new Key[] { Key.F1, Key.F2, Key.F3, Key.F4 },
+            new Key[] { Key.F5, Key.F6, Key.F7, Key.F8 },
+            new Key[] { Key.F9, Key.F10, Key.F11, Key.F12 }
         };
-        */
+        //static readonly Key[] manaGrid = new[] { Key.D1, Key.D2, Key.D3 };
         static readonly Key[] NumpadKeys = new Key[] { Key.Num0, Key.Num1, Key.Num2, Key.Num3, Key.Num4, Key.Num5, Key.Num6, Key.Num7, Key.Num8, Key.Num9 };
-        static readonly Key[] FunctionKeys = new Key[] { Key.F1, Key.F2, Key.F3, Key.F4, Key.F5, Key.F6, Key.F7, Key.F8, Key.F9, Key.F10, Key.F11, Key.F12 };
+        static readonly Key[] FunctionKeys = new Key[] { Key.F12, Key.F1, Key.F2, Key.F3, Key.F4, Key.F5, Key.F6, Key.F7, Key.F8, Key.F9, Key.F10, Key.F11 };
         static readonly ColoreColor fadePurple = new ColoreColor((byte)64, (byte)0, (byte)123);
         static readonly ColoreColor fadeRed = new ColoreColor((byte)24, (byte)0, (byte)0);
         static readonly ColoreColor fadeBlue = new ColoreColor((byte)0, (byte)0, (byte)32);
         static readonly ColoreColor fadeWhite = new ColoreColor((byte)32, (byte)32, (byte)32);
         static readonly ColoreColor contrastOrange = new ColoreColor((byte)255, (byte)40, 0);
-        static bool dangerousState = false;
+        static bool blinking = false;
         static void Main(string[] args)
         {
             MainAsync(args).GetAwaiter().GetResult();
@@ -89,7 +88,7 @@ namespace RenaissanceGEChroma
                     var MP1Point = Math.Round((double)char1CurrentMP / char1MaxMP, 2);
                     var MP2Point = Math.Round((double)char2CurrentMP / char2MaxMP, 2);
                     var MP3Point = Math.Round((double)char3CurrentMP / char3MaxMP, 2);
-                    renderKeyboard(ref keyboard, new[] { (int)(HP1Point * 10), (int)(HP2Point * 10), (int)(HP3Point * 10) }, new[] { (int)(MP1Point * 10), (int)(MP2Point * 10), (int)(MP3Point * 10) });
+                    RenderKeyboard(ref keyboard, new[] { (int)(HP1Point * 10), (int)(HP2Point * 10), (int)(HP3Point * 10) }, new[] { (int)(MP1Point * 10), (int)(MP2Point * 10), (int)(MP3Point * 10) });
                     await chroma.Keyboard.SetCustomAsync(keyboard);
                     //char1Name = vam.ReadStringASCII((IntPtr)(vam.getBaseAddress + Name[0]), bufferSize);
                     //char2Name = vam.ReadStringASCII((IntPtr)(vam.getBaseAddress + Name[1]), bufferSize);
@@ -114,35 +113,43 @@ namespace RenaissanceGEChroma
             }
         }
 
-        private static void renderKeyboard(ref KeyboardCustom keyboard, int[] characterHPPoint, int[] characterMPPoint)
+        private static void RenderKeyboard(ref KeyboardCustom keyboard, int[] characterHPPoint, int[] characterMPPoint)
         {
             //reset
             keyboard.Set(fadeRed);
+            /*
             var currentTime = DateTime.Now;
             var am_pm = currentTime.ToString("tt", CultureInfo.InvariantCulture);
-            keyboard[FunctionKeys[currentTime.Hour == 0 ? 11 : (currentTime.Hour % 12) - 1]] = am_pm == "AM" ? ColoreColor.White : ColoreColor.Blue;
+            keyboard[FunctionKeys[currentTime.Hour % 12]] = am_pm == "AM" ? ColoreColor.White : ColoreColor.Blue;
             var decMin = (currentTime.Minute - (currentTime.Minute % 10)) / 10;
             keyboard[NumpadKeys[decMin]] = contrastOrange;
             keyboard[NumpadKeys[currentTime.Minute % 10]] = ColoreColor.Yellow;
+            */
             for (var i = 0; i < charRenderGrid[0].Length; i++)
             {
                 keyboard[charRenderGrid[0][i]] = fadeWhite;
                 keyboard[charRenderGrid[1][i]] = fadeWhite;
                 keyboard[charRenderGrid[2][i]] = fadeWhite;
-                //keyboard[charMPRows[0][i]] = fadeWhite;
-                //keyboard[charMPRows[1][i]] = fadeWhite;
-                //keyboard[charMPRows[2][i]] = fadeWhite;
+            }
+            for(var i = 0; i < charMPRows[0].Length; i++)
+            {
+                keyboard[charMPRows[0][i]] = fadeWhite;
+                keyboard[charMPRows[1][i]] = fadeWhite;
+                keyboard[charMPRows[2][i]] = fadeWhite;
             }
             for (var charIndex = 0; charIndex < characterHPPoint.Length; charIndex++)
             {
-                ColoreColor stateColor = GetHPStateColor(characterHPPoint[charIndex]);
-                for (var i = 0; i < characterMPPoint[charIndex]; i++)
-                    keyboard[charRenderGrid[charIndex][i]] = ColoreColor.Blue;
+                ColoreColor hpColor = GetHPStateColor(characterHPPoint[charIndex]);
+                ColoreColor mpColor = new ColoreColor((byte)0, (byte)0, (byte)(25.5 * characterMPPoint[charIndex]));
+                var manaPercent = Math.Round(((double)characterMPPoint[charIndex] / 10) * charMPRows[charIndex].Length, 0);
+                for (var i = 0; i < manaPercent; i++)
+                    keyboard[charMPRows[charIndex][i]] = ColoreColor.Blue;
+
                 for (var i = 0; i < characterHPPoint[charIndex]; i++)
-                    keyboard[charRenderGrid[charIndex][i]] = stateColor;
+                    keyboard[charRenderGrid[charIndex][i]] = hpColor;
 
             }
-            dangerousState = !dangerousState;
+            blinking = !blinking;
 
         }
 
@@ -155,7 +162,7 @@ namespace RenaissanceGEChroma
             }
             if (hp < 5)
             {
-                if (dangerousState) //RED-BLACK blinking
+                if (blinking) //RED-BLACK blinking
                 {
                     stateColor = ColoreColor.Red;
                 }
